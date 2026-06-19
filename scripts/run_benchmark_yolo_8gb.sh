@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -eu
+
+cd ~
+
+for run in 1 2 3; do
+    output="results/8gb/yolo_640x640_run${run}_8gb.csv"
+    memory_log="results/8gb/yolo_640x640_run${run}_8gb_pre_memory.txt"
+
+    echo "=== 8GB run${run} を開始します ==="
+    mkdir -p results/8gb
+    {
+        echo "# 8GB run${run} 実行前メモリ記録"
+        date
+        echo
+        echo "## free -m"
+        free -m
+        echo
+        echo "## /proc/meminfo (抜粋)"
+        grep -E 'MemTotal|MemFree|MemAvailable|Buffers|Cached|SwapTotal|SwapFree' /proc/meminfo
+    } > "${memory_log}"
+    python3 ~/scripts/benchmark_yolo.py \
+        --resolution 640x640 \
+        --duration 300 \
+        --output "${output}"
+done
