@@ -9,6 +9,7 @@
 まず、誌面の第3章に沿って Raspberry Pi OS、HailoRT、hailo-ollama、Python環境をセットアップしてください。その後、Raspberry Pi上で次のように取得します。
 
 ```bash
+cd ~
 git clone https://github.com/TechMind428/RPi_AI_HAT-2.git
 mkdir -p ~/scripts
 cp ~/RPi_AI_HAT-2/scripts/* ~/scripts/
