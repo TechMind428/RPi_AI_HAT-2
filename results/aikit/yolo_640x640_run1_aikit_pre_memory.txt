@@ -1,0 +1,20 @@
+# AI Kit run1 実行前メモリ記録
+Thu  2 Jul 16:39:08 JST 2026
+
+## model
+/usr/share/hailo-models/yolov8s_h8l.hef
+
+## free -m
+               total        used        free      shared  buff/cache   available
+Mem:           16218         516       15137          27         691       15702
+Swap:           2047           0        2047
+
+## /proc/meminfo (抜粋)
+MemTotal:       16607600 kB
+MemFree:        15500640 kB
+MemAvailable:   16079136 kB
+Buffers:           35792 kB
+Cached:           641968 kB
+SwapCached:            0 kB
+SwapTotal:       2097136 kB
+SwapFree:        2097136 kB

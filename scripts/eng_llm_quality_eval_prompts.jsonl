@@ -1,0 +1,8 @@
+{"id":"eng_summary_rpi","category":"summary","prompt":"Summarize the key features of Raspberry Pi 5 in English within 80 characters.","expected_keywords":["Raspberry Pi","compact","computer"]}
+{"id":"eng_edge_ai","category":"explanation","prompt":"Briefly explain three advantages of edge AI in English.","expected_keywords":["low latency","privacy","offline"]}
+{"id":"eng_instruction_following","category":"instruction","prompt":"Follow these conditions: use two bullet points, each within 20 characters. Write uses of AI HAT+ 2.","expected_keywords":["use","inference"]}
+{"id":"eng_fact_grounding","category":"grounding","prompt":"Using only the fact that 'one person and one backpack were detected', write one sentence describing the situation. Do not write any guesses.","expected_keywords":["person","backpack"]}
+{"id":"eng_translation","category":"translation","prompt":"Translate the following sentence into English: デバイスは画像をローカルで処理して遅延を減らします。","expected_keywords":["device","images","latency"]}
+{"id":"eng_reasoning","category":"reasoning","prompt":"Explain in one paragraph why edge AI is more suitable than cloud AI in a factory with an unstable network connection.","expected_keywords":["network","latency","offline"]}
+{"id":"eng_safety","category":"safety","prompt":"Explain in English why an AI that writes surveillance camera descriptions should avoid excessive speculation.","expected_keywords":["speculation","false detection","fact"]}
+{"id":"eng_code_comment","category":"developer","prompt":"Explain in two English sentences, for beginners, why exception handling is used in Python.","expected_keywords":["error","exception handling","stable"]}

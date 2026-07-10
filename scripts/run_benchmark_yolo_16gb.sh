@@ -19,8 +19,9 @@ for run in 1 2 3; do
         echo "## /proc/meminfo (抜粋)"
         grep -E 'MemTotal|MemFree|MemAvailable|Buffers|Cached|SwapTotal|SwapFree' /proc/meminfo
     } > "${memory_log}"
-    python3 ~/scripts/benchmark_yolo.py \
+    python3 ~/scripts/benchmark_yolo_hailo_telemetry.py \
         --resolution 640x640 \
         --duration 300 \
+        --profile-stages \
         --output "${output}"
 done

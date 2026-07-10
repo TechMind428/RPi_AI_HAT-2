@@ -1,0 +1,25 @@
+# 8GB LLM比較 実行前メモリ記録
+Tue  7 Jul 20:09:44 JST 2026
+
+## free -m
+               total        used        free      shared  buff/cache   available
+Mem:            8062         313        7484          14         348        7749
+Swap:           8126           0        8126
+
+## /proc/meminfo (抜粋)
+MemTotal:        8256432 kB
+MemFree:         7664464 kB
+MemAvailable:    7935584 kB
+Buffers:           30864 kB
+Cached:           305328 kB
+SwapCached:            0 kB
+SwapTotal:       8322016 kB
+SwapFree:        8322016 kB
+
+## 利用可能モデル
+deepseek_r1:1.5b
+llama3.2:1b
+qwen2.5-coder:1.5b
+qwen2.5:1.5b
+qwen2:1.5b
+qwen3:1.7b

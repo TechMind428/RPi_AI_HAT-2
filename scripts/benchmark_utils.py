@@ -13,6 +13,7 @@ import psutil
 import time
 import csv
 import json
+import threading
 import numpy as np
 from pathlib import Path
 from typing import Dict, List, Any, Optional
@@ -25,6 +26,8 @@ class SystemMonitor:
     def __init__(self):
         """初期化"""
         self.measurements = []
+        # interval=None で使うため、初回値をここで捨てておく。
+        psutil.cpu_percent(interval=None)
     
     def measure(self) -> Dict[str, Any]:
         """
@@ -33,8 +36,8 @@ class SystemMonitor:
         Returns:
             Dict: システムリソース情報
         """
-        # CPU使用率（0.1秒間隔で測定）
-        cpu_percent = psutil.cpu_percent(interval=0.1)
+        # CPU使用率。ベンチマーク本体を止めないように非ブロッキングで読む。
+        cpu_percent = psutil.cpu_percent(interval=None)
         
         # メモリ情報
         mem = psutil.virtual_memory()
@@ -112,6 +115,215 @@ class SystemMonitor:
         self.measurements = []
 
 
+class HailoTelemetryMonitor:
+    """Hailoデバイス側の温度、RAM、NNC使用率を測定するクラス"""
+
+    def __init__(
+        self,
+        enabled: bool = False,
+        sampling_period_ms: int = 100,
+        poll_interval_sec: float = 1.0,
+    ):
+        self.enabled = enabled
+        self.sampling_period_ms = sampling_period_ms
+        self.poll_interval_sec = poll_interval_sec
+        self.measurements = []
+        self.error = None
+        self.device = None
+        self.control = None
+        self.has_performance_stats = False
+        self._thread = None
+        self._stop_event = threading.Event()
+        self._lock = threading.Lock()
+
+        if not enabled:
+            return
+
+        try:
+            from hailo_platform import Device
+
+            self.device = Device()
+            self.control = self.device.control
+            self.has_performance_stats = hasattr(self.control, "query_performance_stats")
+            print("✓ HAT側テレメトリの初期化完了")
+        except Exception as exc:  # noqa: BLE001
+            self.error = f"{type(exc).__name__}: {exc}"
+            print(f"警告: HAT側テレメトリの初期化に失敗しました: {self.error}")
+
+    def start(self):
+        if not self.enabled or self.control is None or self._thread is not None:
+            return
+
+        self._stop_event.clear()
+        self._thread = threading.Thread(target=self._run, daemon=True)
+        self._thread.start()
+
+    def stop(self):
+        if self._thread is None:
+            return
+
+        self._stop_event.set()
+        self._thread.join(timeout=max(1.0, self.poll_interval_sec + 0.5))
+        self._thread = None
+
+    def close(self):
+        self.stop()
+        if self.device is None:
+            return
+        try:
+            self.device.release()
+        except Exception:
+            pass
+        self.device = None
+
+    def latest(self) -> Optional[Dict[str, Any]]:
+        with self._lock:
+            if not self.measurements:
+                return None
+            return dict(self.measurements[-1])
+
+    def snapshot(self) -> List[Dict[str, Any]]:
+        with self._lock:
+            return [dict(measurement) for measurement in self.measurements]
+
+    def _run(self):
+        while not self._stop_event.is_set():
+            self.measure()
+            self._stop_event.wait(self.poll_interval_sec)
+
+    @staticmethod
+    def _read_attr(obj, name):
+        try:
+            return getattr(obj, name)
+        except Exception:
+            return None
+
+    @staticmethod
+    def _ram_kib_to_mb(value):
+        if value is None or value < 0:
+            return None
+        return value / 1024
+
+    def measure(self) -> Optional[Dict[str, Any]]:
+        if not self.enabled or self.control is None:
+            return None
+
+        record = {
+            "timestamp": time.time(),
+            "datetime": datetime.now().isoformat(),
+            "hailo_error": None,
+        }
+
+        try:
+            temperature = self.control.get_chip_temperature()
+            ts0 = self._read_attr(temperature, "ts0_temperature")
+            ts1 = self._read_attr(temperature, "ts1_temperature")
+            temps = [value for value in (ts0, ts1) if value is not None]
+            record.update({
+                "hailo_ts0_temp_c": ts0,
+                "hailo_ts1_temp_c": ts1,
+                "hailo_temp_c": float(np.mean(temps)) if temps else None,
+            })
+        except Exception as exc:  # noqa: BLE001
+            record["hailo_error"] = f"temperature: {type(exc).__name__}: {exc}"
+
+        if self.has_performance_stats:
+            try:
+                stats = self.control.query_performance_stats(self.sampling_period_ms)
+                ram_total = self._read_attr(stats, "ram_size_total")
+                ram_used = self._read_attr(stats, "ram_size_used")
+                ram_total_mb = self._ram_kib_to_mb(ram_total)
+                ram_used_mb = self._ram_kib_to_mb(ram_used)
+                record.update({
+                    "hailo_cpu_utilization": self._read_attr(stats, "cpu_utilization"),
+                    "hailo_nnc_utilization": self._read_attr(stats, "nnc_utilization"),
+                    "hailo_dsp_utilization": self._read_attr(stats, "dsp_utilization"),
+                    "hailo_ram_total_mb": ram_total_mb,
+                    "hailo_ram_used_mb": ram_used_mb,
+                    "hailo_ram_percent": (
+                        (ram_used_mb / ram_total_mb) * 100
+                        if ram_total_mb and ram_used_mb is not None
+                        else None
+                    ),
+                    "hailo_ddr_noc_total_transactions": self._read_attr(
+                        stats, "ddr_noc_total_transactions"
+                    ),
+                })
+            except Exception as exc:  # noqa: BLE001
+                existing = record.get("hailo_error")
+                perf_error = f"performance_stats: {type(exc).__name__}: {exc}"
+                record["hailo_error"] = f"{existing}; {perf_error}" if existing else perf_error
+
+        with self._lock:
+            self.measurements.append(record)
+        return record
+
+    def get_statistics(self) -> Dict[str, Any]:
+        if not self.measurements:
+            return {}
+
+        def summarize(values: List[float]) -> Dict[str, float]:
+            return {
+                'mean': float(np.mean(values)),
+                'std': float(np.std(values)),
+                'min': float(np.min(values)),
+                'max': float(np.max(values)),
+                'p50': float(np.percentile(values, 50)),
+                'p95': float(np.percentile(values, 95)),
+                'p99': float(np.percentile(values, 99)),
+            }
+
+        numeric_keys = sorted({
+            key
+            for measurement in self.measurements
+            for key, value in measurement.items()
+            if (
+                isinstance(value, (int, float))
+                and not isinstance(value, bool)
+                and key != "timestamp"
+            )
+        })
+
+        stats = {}
+        for key in numeric_keys:
+            values = [
+                measurement[key]
+                for measurement in self.measurements
+                if isinstance(measurement.get(key), (int, float))
+                and measurement.get(key) is not None
+            ]
+            if values:
+                stats[key] = summarize(values)
+
+        stats["measurement_count"] = len(self.measurements)
+        if self.error:
+            stats["initialization_error"] = self.error
+
+        errors = [
+            measurement.get("hailo_error")
+            for measurement in self.measurements
+            if measurement.get("hailo_error")
+        ]
+        if errors:
+            stats["error_summary"] = errors[0]
+
+        return stats
+
+
+def flatten_hailo_telemetry(stats: Dict[str, Any]) -> Dict[str, Any]:
+    """HAT側テレメトリの集計結果をCSVの1行へ展開する"""
+    flattened = {}
+
+    for metric, value in stats.items():
+        if isinstance(value, dict):
+            for key, metric_value in value.items():
+                flattened[f"{metric}_{key}"] = metric_value
+        elif isinstance(value, (int, float, str)):
+            flattened[f"hailo_telemetry_{metric}"] = value
+
+    return flattened
+
+
 class DataSaver:
     """測定データを保存するクラス"""
     
@@ -131,9 +343,18 @@ class DataSaver:
         # ディレクトリが存在しない場合は作成
         Path(filepath).parent.mkdir(parents=True, exist_ok=True)
         
-        # CSVに保存
+        # CSVに保存。行ごとに追加メトリクスが増える場合があるため、
+        # すべての行に現れるキーを順序を保って統合する。
+        fieldnames = []
+        seen = set()
+        for row in data:
+            for key in row.keys():
+                if key not in seen:
+                    fieldnames.append(key)
+                    seen.add(key)
+
         with open(filepath, 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=data[0].keys())
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(data)
         

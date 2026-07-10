@@ -77,6 +77,37 @@ class HailoOllamaClient:
             method="POST",
         )
 
+        return self._stream_request(request, mode="chat")
+
+    def generate(
+        self,
+        model_name: str,
+        prompt: str,
+        max_tokens: int = 128,
+        temperature: float = 0.0,
+    ) -> ChatResult:
+        """ストリーミングでテキスト生成を実行し、TTFTとTPSを計測"""
+        endpoint = f"{self.server_url}/api/generate"
+        body = {
+            "model": model_name,
+            "stream": True,
+            "prompt": prompt,
+            "options": {
+                "num_predict": max_tokens,
+                "temperature": temperature,
+            },
+        }
+        request = urllib.request.Request(
+            endpoint,
+            data=json.dumps(body).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+
+        return self._stream_request(request, mode="generate")
+
+    def _stream_request(self, request: urllib.request.Request, mode: str) -> ChatResult:
+        """`/api/chat` と `/api/generate` のストリーム応答を共通形式へ変換する"""
         response_parts: List[str] = []
         final_chunk: Dict[str, Any] = {}
         first_token_at: float | None = None
@@ -90,8 +121,11 @@ class HailoOllamaClient:
                         continue
 
                     chunk = json.loads(line)
-                    message = chunk.get("message", {})
-                    content = message.get("content", "")
+                    if mode == "generate":
+                        content = chunk.get("response", "")
+                    else:
+                        message = chunk.get("message", {})
+                        content = message.get("content", "")
 
                     if content:
                         if first_token_at is None:
@@ -101,6 +135,11 @@ class HailoOllamaClient:
                     if chunk.get("done"):
                         final_chunk = chunk
         except urllib.error.HTTPError as exc:
+            error_body = exc.read().decode("utf-8", errors="replace").strip()
+            if error_body:
+                raise RuntimeError(
+                    f"HTTPエラー: {exc.code} {exc.reason}\n{error_body}"
+                ) from exc
             raise RuntimeError(f"HTTPエラー: {exc.code} {exc.reason}") from exc
         except urllib.error.URLError as exc:
             raise RuntimeError(f"サーバー接続エラー: {exc.reason}") from exc

@@ -10,6 +10,13 @@ fi
 MODELS="all"
 OUTPUT_PREFIX="results/16gb/llm_compare_16gb"
 MEMORY_LOG="results/16gb/llm_compare_16gb_pre_memory.txt"
+PROMPTS_FILE="$HOME/scripts/llm_quality_eval_prompts.jsonl"
+
+if [ ! -f "${PROMPTS_FILE}" ]; then
+    echo "エラー: プロンプト定義が見つかりません: ${PROMPTS_FILE}" >&2
+    echo "第3章の手順で scripts/ を ~/scripts/ にコピーしてください。" >&2
+    exit 1
+fi
 
 mkdir -p results/16gb
 
@@ -29,10 +36,11 @@ mkdir -p results/16gb
 
 python3 ~/scripts/benchmark_hailo_ollama_llm.py \
     --models "${MODELS}" \
-    --prompts ~/experiments/llm_quality_eval_prompts.jsonl \
+    --prompts "${PROMPTS_FILE}" \
     --output-prefix "${OUTPUT_PREFIX}" \
     --runs 3 \
     --max-tokens 128 \
     --temperature 0.0 \
     --warmup \
-    --check-available
+    --check-available \
+    --hat-telemetry

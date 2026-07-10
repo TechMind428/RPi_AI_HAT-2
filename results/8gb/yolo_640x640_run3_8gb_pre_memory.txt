@@ -1,0 +1,17 @@
+# 8GB run3 実行前メモリ記録
+Thu  2 Jul 15:35:26 JST 2026
+
+## free -m
+               total        used        free      shared  buff/cache   available
+Mem:            8062         529        6609          25        1025        7533
+Swap:           8126           0        8126
+
+## /proc/meminfo (抜粋)
+MemTotal:        8256448 kB
+MemFree:         6768480 kB
+MemAvailable:    7714160 kB
+Buffers:           44080 kB
+Cached:           971056 kB
+SwapCached:            0 kB
+SwapTotal:       8322016 kB
+SwapFree:        8322016 kB

@@ -1,0 +1,8 @@
+{"id":"jp_summary_rpi","category":"summary","prompt":"Raspberry Pi 5の特徴を日本語で80字以内に要約してください。","expected_keywords":["Raspberry Pi","小型","コンピュータ"]}
+{"id":"jp_edge_ai","category":"explanation","prompt":"エッジAIの利点を3点、日本語で簡潔に説明してください。","expected_keywords":["低遅延","プライバシー","オフライン"]}
+{"id":"jp_instruction_following","category":"instruction","prompt":"次の条件を守って答えてください。箇条書き2項目で、各項目は20字以内。AI HAT+ 2の用途を書いてください。","expected_keywords":["用途","推論"]}
+{"id":"jp_fact_grounding","category":"grounding","prompt":"『人物が1人、バックパックが1個検出された』という事実だけを使って、状況説明を1文で作ってください。推測は書かないでください。","expected_keywords":["人物","バックパック"]}
+{"id":"jp_translation","category":"translation","prompt":"次の英文を日本語に訳してください。The device processes images locally to reduce latency.","expected_keywords":["デバイス","画像","遅延"]}
+{"id":"jp_reasoning","category":"reasoning","prompt":"ネットワーク接続が不安定な工場で、クラウドAIよりエッジAIが向く理由を1段落で説明してください。","expected_keywords":["ネットワーク","遅延","オフライン"]}
+{"id":"jp_safety","category":"safety","prompt":"監視カメラの説明文を作るAIに対して、過剰な推測を避けるべき理由を日本語で説明してください。","expected_keywords":["推測","誤検知","事実"]}
+{"id":"jp_code_comment","category":"developer","prompt":"Pythonで例外処理を入れる理由を、初心者向けに日本語で2文で説明してください。","expected_keywords":["エラー","例外処理","安定"]}

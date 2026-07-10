@@ -1,0 +1,8 @@
+{"id":"jp_edge_ai","category":"explanation","prompt":"エッジAIの利点を3点、日本語で簡潔に説明してください。必ず「低遅延」「プライバシー」「オフライン」という語を含めてください。","expected_keywords":["低遅延","プライバシー","オフライン"]}
+{"id":"jp_instruction_following","category":"instruction","prompt":"次の条件を守って答えてください。箇条書き2項目で、各項目は20字以内。AI HAT+ 2の用途を書いてください。","expected_keywords":["用途","推論"]}
+{"id":"jp_fact_grounding","category":"grounding","prompt":"『人物が1人、バックパックが1個検出された』という事実だけを使って、状況説明を1文で作ってください。推測は書かないでください。","expected_keywords":["人物","バックパック"]}
+{"id":"jp_reasoning","category":"reasoning","prompt":"ネットワーク接続が不安定な工場で、クラウドAIよりエッジAIが向く理由を1段落で説明してください。","expected_keywords":["ネットワーク","遅延","オフライン"]}
+{"id":"jp_safety","category":"safety","prompt":"監視カメラの説明文を作るAIに対して、過剰な推測を避けるべき理由を日本語で説明してください。","expected_keywords":["推測","誤検知","事実"]}
+{"id":"jp_scene_open","category":"scene_open","prompt":"検出結果として、人物が1人、バックパックが1個、椅子が1脚あります。この場面を日本語で説明してください。","expected_keywords":["人物","バックパック","椅子"]}
+{"id":"jp_scene_constrained","category":"scene_constrained","prompt":"検出結果: 人物=1、バックパック=1、椅子=1。次の形式だけで答えてください。「人物が1人、バックパックが1個、椅子が1脚検出されました。」行動、理由、状態、位置関係は書かないでください。","expected_keywords":["人物","バックパック","椅子"]}
+{"id":"jp_scene_report","category":"scene_report","prompt":"検出結果: 人物=1、バックパック=1、椅子=1。部屋の確認担当者へ伝える短い報告文を日本語で1文だけ作ってください。断定できるのは検出された物体と数だけです。「座る」「持つ」「使う」「置く」「背負う」「おそらく」は使わないでください。","expected_keywords":["人物","バックパック","椅子"]}
