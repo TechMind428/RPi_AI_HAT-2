@@ -595,4 +595,3 @@ if __name__ == "__main__":
     
     print("\n=== テスト完了 ===")
 
-# Made with Bob
