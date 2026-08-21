@@ -1,12 +1,14 @@
 # RPi_AI_HAT-2
 
-本リポジトリは、Interface 2026年10月号 特集第3部の記事で使用するサンプルコードと測定結果をまとめたものです。
+本リポジトリは、Interface 2026年10月号 特設記事で使用するサンプルコードと測定結果をまとめたものです。
 
-記事の第3章で案内している通り、Raspberry Pi側で本リポジトリを `git clone` し、`scripts/` 配下のファイルを `~/scripts/` にコピーして使うことを前提にしています。
+[https://interface.cqpub.co.jp/magazine/202610/](https://interface.cqpub.co.jp/magazine/202610/)
+
+記事でご案内の通り、Raspberry Pi側で本リポジトリを `git clone` し、`scripts/` 配下のファイルを `~/scripts/` にコピーして使うことを前提にしています。
 
 ## 使い方
 
-まず、誌面の第3章に沿って Raspberry Pi OS、HailoRT、hailo-ollama、Python環境をセットアップしてください。その後、Raspberry Pi上で次のように取得します。
+まず、誌面第３章の説明に沿って Raspberry Pi OS、HailoRT、hailo-ollama、Python環境をセットアップしてください。その後、Raspberry Pi上で次のように取得します。
 
 ```bash
 cd ~
@@ -16,7 +18,7 @@ cp ~/RPi_AI_HAT-2/scripts/* ~/scripts/
 chmod +x ~/scripts/*.sh
 ```
 
-以降の章では、`~/scripts/` に置いたスクリプトを使って、YOLO物体検出、LLM比較、マルチモーダル実験を行います。
+第4章以降では、`~/scripts/` に置いたスクリプトを使って、YOLO物体検出、LLM比較、マルチモーダル実験を行います。
 
 ## ディレクトリ構成
 
@@ -30,4 +32,4 @@ chmod +x ~/scripts/*.sh
 
 ## 注意
 
-このリポジトリ単体でセットアップ手順を完結させるものではありません。必ず Interface 2026年10月号 特集第3部、特に第3章の手順とあわせて利用してください。
+このリポジトリ単体でセットアップ手順を完結させるものではありません。必ず Interface 2026年10月号 特設記事「ラズパイ X AI HAT+ 2で実験＆アプリケーション作り」の特に第3章の手順とあわせて利用してください。
